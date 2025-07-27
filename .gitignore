@@ -1,0 +1,8 @@
+# Ignoriere Build‑/Cache‑Ordner
+.firebase/
+functions/.next/
+functions/node_modules/@next/
+.next/
+node_modules/
+.env
+temp-clean/

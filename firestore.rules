@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if a user is an admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Helper function to check if the user is the owner of a document path
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Rule 1: Admins can read and write ANY document in the entire database.
+    // This rule is checked first. If a user is an admin, no other rules matter.
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Rule 2: Partners can only access their own cases.
+    // This rule secures the path: /cases/{userId}/user_cases/{caseId}
+    match /cases/{userId}/user_cases/{caseId} {
+      // Allow a user to do anything (read, create, update, delete)
+      // inside their own user_cases sub-collection.
+      // The isOwner(userId) function ensures that the logged-in user's ID
+      // matches the {userId} in the path they are trying to access.
+      allow read, write: if isOwner(userId);
+    }
+  }
+}

@@ -1,0 +1,28 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if a user is an admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Helper function to check if the user is the owner based on the path
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Rule 1: Admins can read and write ANY file in the entire bucket.
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Rule 2: Partners can only access files within their own user folder.
+    // This rule secures the path: /cases/{userId}/{caseId}/{allPaths=**}
+    match /cases/{userId}/{caseId}/{allPaths=**} {
+      // Allow a user to do anything (upload, view, delete) with files
+      // as long as the {userId} in the path matches their own user ID.
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
