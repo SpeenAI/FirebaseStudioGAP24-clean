@@ -8,3 +8,4 @@ node_modules/
 temp-clean/
 serviceAccountKey.json
 serviceAccountKey.json
+src/firebaseConfig.ts
