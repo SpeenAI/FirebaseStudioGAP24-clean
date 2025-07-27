@@ -1,7 +1,16 @@
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
+# 1) CI-Build-Cache aktivieren
+ci:
+  build:
+    cache:
+      # Für PNPM
+      - path: ~/.pnpm-store
+      # Für node_modules
+      - path: node_modules
+
+# 2) Runtime-Konfiguration
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
+  # Erhöhe das bei starkem Traffic
   maxInstances: 1
