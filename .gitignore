@@ -9,3 +9,4 @@ temp-clean/
 serviceAccountKey.json
 serviceAccountKey.json
 src/firebaseConfig.ts
+src/firebaseConfig.ts
