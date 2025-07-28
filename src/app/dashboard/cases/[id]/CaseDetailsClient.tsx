@@ -194,6 +194,31 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
                 <FileUploadSection label="Innenraum Fahrrerseite"  category="interiorDriverSide"  onFileUpload={handleFileUpload} uploadedFiles={caseData.media?.images?.interiorDriverSide}  onRemoveFile={handleFileRemove}  fileType="image" />
                 <FileUploadSection label="Schäden" category="damageOverview" onFileUpload={handleFileUpload} uploadedFiles={caseData.media?.images?.damageOverview} onRemoveFile={handleFileRemove} fileType="image" />
                 
+                
+                {/* --- Special Abtretung Section --- */}
+                                <div className="grid gap-2 md:col-span-2">
+                                  <Label className="font-semibold text-lg">Abtretungserklärung</Label>
+                                  {abtretungFile ? (
+                                    <div className="flex items-center justify-between p-2 border rounded-md">
+                                      <Link href={abtretungFile.url} target="_blank" className="flex items-center gap-2 overflow-hidden hover:underline"><FileIcon className="h-6 w-6 text-muted-foreground flex-shrink-0" /><span className="text-sm font-medium">{abtretungFile.name}</span></Link>
+                                      <Button variant="ghost" size="icon" onClick={() => handleFileRemove('assignment', abtretungFile.name, abtretungFile.url)} className="text-destructive hover:text-destructive flex-shrink-0"><XCircle className="h-5 w-5" /></Button>
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 gap-4 p-4 border rounded-md bg-slate-50">
+                                      <div className="flex flex-col items-center justify-center gap-2 text-center relative">
+                                        <Upload className="h-8 w-8 text-muted-foreground" />
+                                        <p className="text-sm font-medium">Fertiges Dokument hochladen</p>
+                                        <Input id="assignment-upload" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => e.target.files && e.target.files[0] && handleFileUpload('assignment', e.target.files[0])} accept="image/*,.pdf"/>
+                                      </div>
+                                      <div className="flex flex-col items-center justify-center gap-2 text-center">
+                                        <Edit className="h-8 w-8 text-muted-foreground" />
+                                        <p className="text-sm font-medium">Online ausfüllen & erstellen</p>
+                                        <Button size="sm" onClick={() => setIsFormOpen(true)} className="mt-1">Formular öffnen</Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
                 {/* --- Other Documents --- */}
                 <FileUploadSection label="Versicherungsunterlagen" category="insuranceDocuments" onFileUpload={handleFileUpload} uploadedFiles={caseData.media?.documents?.insuranceDocuments} onRemoveFile={handleFileRemove} fileType="document" />
                 <FileUploadSection label="Polizeibericht" category="policeReport" onFileUpload={handleFileUpload} uploadedFiles={caseData.media?.documents?.policeReport} onRemoveFile={handleFileRemove} fileType="document" />
