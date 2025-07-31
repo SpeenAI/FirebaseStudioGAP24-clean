@@ -25,6 +25,19 @@ interface AbtretungFormProps {
     caseNumber: string;
     clientName: string;
     clientAddress?: string;
+    customerPlate?: string;        // Kennzeichen Kunde
+    accidentDate?: string;         // Datum
+    inspectionLocation?: string;   // Besichtigungsort
+    policeRecordNumber?: string;   // Polizei‑Aktenzeichen
+    witnesses?: string;            // Zeugen
+    serviceBook?: string;          // Scheckheft gepflegt
+    accidentLocation?: string;     // Unfallort
+    accidentDescription?: string;  // Unfallbeschreibung
+    clientPhone?: string;          // Handynummer Kunde
+    opponentPlate?: string;        // Kennzeichen Gegner
+    opponentInsurance?: string;    // Versicherung Gegner
+    opponentVnr?: string;          // VNR Gegner
+    opponentSnr?: string;          // SNR Gegner
   };
   isLoading: boolean;
 }
@@ -324,10 +337,21 @@ export const AbtretungForm: React.FC<AbtretungFormProps> = ({
       <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
         <div ref={printRef} className="p-8 bg-white text-black">
           <div className="flex items-center mb-6">
-            <img src="/noa.logo.png" alt="NOA Logo" className="h-16 w-auto mr-4" />
+          <img src="/noa-logo.svg" alt="NOA Logo" className="h-16 w-auto mr-4"/>
             <h2 className="text-2xl font-semibold text-[#3F51B5]">
               Abtretung &amp; Datenschutz
             </h2>
+          </div>
+          <div className="mb-6 space-y-1 text-sm">
+            <div><strong>Aktenzeichen:</strong> {caseData.caseNumber}</div>
+            <div><strong>Name des Kunden:</strong> {caseData.clientName}</div>
+            <div><strong>Adresse:</strong> {caseData.clientAddress}</div>
+            <div><strong>Kennzeichen Klient:</strong> {caseData.customerPlate}</div>
+            <div><strong>Unfallort:</strong> {caseData.accidentLocation}</div>
+            <div><strong>Kennzeichen Gegner:</strong> {caseData.opponentPlate}</div>
+            <div><strong>Versicherung Gegner:</strong> {caseData.opponentInsurance}</div>
+            <div><strong>VNR Gegner:</strong> {caseData.opponentVnr}</div>
+            <div><strong>SNR Gegner:</strong> {caseData.opponentSnr}</div>
           </div>
 
           <p className="mb-2 whitespace-pre-wrap">{textAbtretung1}</p>

@@ -1,8 +1,9 @@
+import path from 'path';
 import type {NextConfig} from 'next';
+import type { Configuration } from 'webpack';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-
+  // deine bisherigen Optionen
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -18,6 +19,15 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+
+  // Alias für '@/...' auf deinen src-Ordner
+  webpack(config) {
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      '@': path.resolve(__dirname, 'src'),
+    };
+    return config;
   },
 };
 

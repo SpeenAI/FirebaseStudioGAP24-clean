@@ -1,45 +1,82 @@
 // src/types/index.ts
 
-/** Ein einzelnes hochgeladenes File */
+/** Ein gespeichertes File mit Name und URL */
 export interface StoredFile {
-  name: string;
-  url: string;
-}
-/** Alle Bilder und Dokumente zu einem Case, nach Kategorie geordnet */
-export interface CaseMedia {
-  images: {
-    [category: string]: StoredFile[];
-  };
-  documents: {
-    [category: string]: StoredFile[];
-  };
+  name: string
+  url: string
 }
 
-/** Dein Case–Model, exakt passend zu deinen Component‑Props */
-export type Case = {
-  id: string;
-  caseNumber: string;
+/** 
+ * Ein Gutachten‐Fall mit Metadaten und Media‐Einträgen.
+ * Optional: alle neuen Reifen‐Felder
+ */
+export interface Case {
+  /** Firestore‐Dokumenten‐ID */
+  id: string
 
-  /** entspricht dem Feld caseType in deinem JSX */
-  caseType?: string;
-  description?: string;
+  /** Aktenzeichen (Pflichtfeld) */
+  caseNumber: string
 
-  /** entspricht caseData.clientName */
-  clientName: string;
-  /** entspricht caseData.clientEmail */
-  clientEmail: string;
-  /** entspricht caseData.clientAddress */
-  clientAddress: string;
+  /** Gutachten‐Typ (z.B. "accident", "property"... ) */
+  caseType: string
 
-  /** wenn du es noch brauchst, sonst kannst du das rauswerfen */
-  date: string;
-  status: 'Open' | 'In Progress' | 'Closed' | 'Pending';
+  /** Freitext‐Beschreibung */
+  description?: string
 
-  partner: {
-    id: string;
-    name: string;
-  };
+  /** Klienten‐Daten */
+  clientName?: string
+  clientEmail?: string
+  clientAddress?: string
+  customerPlate?: string;        // Kennzeichen Kunde
+  accidentDate?: string;         // Datum
+  inspectionLocation?: string;   // Besichtigungsort
+  policeRecordNumber?: string;   // Polizei‑Aktenzeichen
+  witnesses?: string;            // Zeugen
+  serviceBook?: string;          // Scheckheft gepflegt
+  accidentLocation?: string;     // Unfallort
+  accidentDescription?: string;  // Unfallbeschreibung
+  clientPhone?: string;          // Handynummer Kunde
+  opponentPlate?: string;        // Kennzeichen Gegner
+  opponentInsurance?: string;    // Versicherung Gegner
+  opponentVnr?: string;          // VNR Gegner
+  opponentSnr?: string;          // SNR Gegner
 
-  /** optional, weil anfangs vielleicht noch keins existiert */
-  media?: CaseMedia;
-};
+  /** --- NEUE FELDER für Reifen & Vorschäden --- */
+  /** Hersteller / Marke des Reifens */
+  tireBrandFront?: string
+  tireBrandBack?: string
+
+  /** Dimension, z.B. "205/55 R16" */
+  tireSizeFront?: string
+  tireSizeBack?: string
+
+  /** Profiltiefe vorne rechts in mm */
+  tireDepthVR?: number
+  /** Profiltiefe vorne links in mm */
+  tireDepthVL?: number
+  /** Profiltiefe hinten rechts in mm */
+  tireDepthHR?: number
+  /** Profiltiefe hinten links in mm */
+  tireDepthHL?: number
+
+  /** Beschriebene, bereits reparierte Vorschäden */
+  repairedDamage?: string
+
+  /** Alle in diesem Fall hochgeladenen Mediendateien */
+  media?: {
+    /** Bilder pro Kategorie */
+    images?: Record<string, StoredFile[]>
+    /** Dokumente pro Kategorie */
+    documents?: Record<string, StoredFile[]>
+  }
+}
+// src/types/index.ts
+export interface CaseFormData {
+  
+}
+
+// src/types/index.ts
+
+export interface CaseFormData {
+  caseNumber:       any;
+}

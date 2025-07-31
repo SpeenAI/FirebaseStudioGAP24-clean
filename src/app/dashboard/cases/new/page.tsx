@@ -4,19 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { auth, db } from '@/firebaseConfig';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
 interface CaseFormData {
-  caseNumber: string; caseType: string; description: string;
-  clientName: string; clientEmail: string; clientAddress: string;
+  caseNumber: string;
+  clientName: string;
+  clientAddress: string;
+  customerPlate: string;
+  accidentDate: string;
+  opponentPlate: string;
+  opponentInsurance: string;
+  opponentVnr: string;
+  opponentSnr: string;
 }
 
 export default function NewCasePage() {
@@ -24,38 +29,40 @@ export default function NewCasePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CaseFormData>({
-    caseNumber: '', caseType: '', description: '',
-    clientName: '', clientEmail: '', clientAddress: '',
+    caseNumber: '',
+    clientName: '',
+    clientAddress: '',
+    customerPlate: '',
+    accidentDate: '',
+    opponentPlate: '',
+    opponentInsurance: '',
+    opponentVnr: '',
+    opponentSnr: '',
   });
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, caseType: value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const user = auth.currentUser;
 
+    const user = auth.currentUser;
     if (!user) {
-      toast({ title: "Authentifizierung erforderlich", description: "Bitte melden Sie sich an.", variant: "destructive" });
+      toast({ title: 'Authentifizierung erforderlich', description: 'Bitte melden Sie sich an.', variant: 'destructive' });
       setIsLoading(false);
       return;
     }
-    if (!formData.caseNumber) {
-      toast({ title: "Fehlendes Aktenzeichen", description: "Bitte geben Sie ein Aktenzeichen an.", variant: "destructive" });
+    if (!formData.caseNumber || !formData.clientName) {
+      toast({ title: 'Fehlende Pflichtfelder', description: 'Aktenzeichen und Name des Kunden sind erforderlich.', variant: 'destructive' });
       setIsLoading(false);
       return;
     }
 
     try {
-      const newCaseRef = doc(collection(db, "cases", user.uid, "user_cases"));
-
+      const newCaseRef = doc(collection(db, 'cases', user.uid, 'user_cases'));
       await setDoc(newCaseRef, {
         ...formData,
         caseId: newCaseRef.id,
@@ -66,76 +73,92 @@ export default function NewCasePage() {
         partnerEmail: user.email,
       });
 
-      toast({
-        title: "Fall erfolgreich angelegt!",
-        description: `Der Fall ${formData.caseNumber} wurde erstellt.`
-      });
-
+      toast({ title: 'Fall erfolgreich angelegt', description: `Fall ${formData.caseNumber} wurde erstellt.` });
       router.push(`/dashboard/cases/${newCaseRef.id}`);
-
-    } catch (error: any) {
-      toast({
-        title: "Erstellung des Falls fehlgeschlagen",
-        description: error.message,
-        variant: "destructive"
-      });
+    } catch (err: any) {
+      toast({ title: 'Fehler', description: err.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="outline" size="icon" className="h-7 w-7">
-          <Link href="/dashboard"><ChevronLeft className="h-4 w-4" /><span className="sr-only">Zurück</span></Link>
+          <Link href="/dashboard">
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Zurück</span>
+          </Link>
         </Button>
-        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0 font-headline">Neuen Fall anlegen</h1>
+        <h1 className="text-xl font-semibold">Neuen Fall anlegen</h1>
       </div>
-      <form onSubmit={handleSubmit} className="grid gap-6">
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* --- Block 1: Grunddaten --- */}
         <Card>
           <CardHeader>
-            <CardTitle>Falldetails</CardTitle>
+            <CardTitle>Fallinformationen</CardTitle>
             <CardDescription>
-              Füllen Sie die Grunddaten für den neuen Fall aus. Bilder und Dokumente können im nächsten Schritt hinzugefügt werden.
+              Erfasse hier die Basisdaten für den neuen Fall.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="caseNumber">Aktenzeichen</Label>
               <Input id="caseNumber" placeholder="Aktenzeichen eingeben" required value={formData.caseNumber} onChange={handleInputChange} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="case-type">Fallart</Label>
-              <Select onValueChange={handleSelectChange} value={formData.caseType}>
-                <SelectTrigger id="case-type"><SelectValue placeholder="Wählen Sie eine Fallart" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="accident">Unfallgutachten</SelectItem>
-                  <SelectItem value="property">Sachschaden</SelectItem>
-                  <SelectItem value="personal-injury">Personenschaden</SelectItem>
-                  <SelectItem value="other">Sonstiges</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="clientName">Name des Kunden</Label>
+              <Input id="clientName" placeholder="Max Mustermann" required value={formData.clientName} onChange={handleInputChange} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Beschreibung</Label>
-              <Textarea id="description" placeholder="Geben Sie eine kurze Zusammenfassung des Falls" rows={5} value={formData.description} onChange={handleInputChange} />
+              <Label htmlFor="clientAddress">Adresse des Kunden</Label>
+              <Input id="clientAddress" placeholder="Musterstraße 1, 12345 Stadt" value={formData.clientAddress} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="clientLicense">Kennzeichen des Kunden</Label>
+              <Input id="clientLicense" placeholder="B‑AB 1234" value={formData.customerPlate} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="accidentDate">Unfalltag</Label>
+              <Input id="accidentDate" type="date" value={formData.accidentDate} onChange={handleInputChange} />
             </div>
           </CardContent>
         </Card>
+
+        {/* --- Block 2: Gegnerdaten --- */}
         <Card>
           <CardHeader>
-            <CardTitle>Klienteninformationen</CardTitle>
+            <CardTitle>Gegnerdaten</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2"><Label htmlFor="clientName">Vollständiger Name</Label><Input id="clientName" placeholder="Max Mustermann" value={formData.clientName} onChange={handleInputChange} /></div>
-            <div className="grid gap-2"><Label htmlFor="clientEmail">E-Mail</Label><Input id="clientEmail" type="email" placeholder="max.mustermann@example.com" value={formData.clientEmail} onChange={handleInputChange} /></div>
-            <div className="grid gap-2 sm:col-span-2"><Label htmlFor="clientAddress">Adresse</Label><Input id="clientAddress" placeholder="Musterstraße 123, 12345 Musterstadt" value={formData.clientAddress} onChange={handleInputChange} /></div>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="opponentLicense">Kennzeichen des Gegners</Label>
+              <Input id="opponentLicense" placeholder="M‑CD 5678" value={formData.opponentPlate} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="opponentInsurance">Versicherung des Gegners</Label>
+              <Input id="opponentInsurance" placeholder="Versicherung XY" value={formData.opponentInsurance} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="opponentVnr">VNR des Gegners</Label>
+              <Input id="opponentVnr" placeholder="1234567890" value={formData.opponentVnr} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="opponentSnr">SNR des Gegners</Label>
+              <Input id="opponentSnr" placeholder="0987654321" value={formData.opponentSnr} onChange={handleInputChange} />
+            </div>
           </CardContent>
         </Card>
+
         <div className="flex justify-end gap-2">
-          <Button variant="outline" type="button" onClick={() => router.push('/dashboard')}>Abbrechen</Button>
-          <Button type="submit" disabled={isLoading}>{isLoading ? 'Wird angelegt...' : 'Fall anlegen & Weiter'}</Button>
+          <Button variant="outline" type="button" onClick={() => router.push('/dashboard')}>
+            Abbrechen
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Erstelle...' : 'Fall erstellen'}
+          </Button>
         </div>
       </form>
     </div>
