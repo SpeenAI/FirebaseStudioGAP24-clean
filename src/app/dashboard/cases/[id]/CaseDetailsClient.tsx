@@ -20,6 +20,8 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import EditCaseForm from '@/components/EditCaseForm'
 import { Textarea } from '@/components/ui/textarea'
+import { VollmachtForm } from '@/components/Vollmacht';
+import { arrayUnion } from 'firebase/firestore';
 
 // --- Interfaces ---
 interface StoredFile { name: string; url: string; }
@@ -53,11 +55,17 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
       <Input
         id={`${category}-upload`}
         type="file"
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        onChange={(e) =>
-          e.target.files?.[0] && onFileUpload(category, e.target.files[0])
-        }
+        multiple
         accept={fileType === 'image' ? 'image/*' : '.pdf,.doc,.docx,.txt'}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        onChange={async (e) => {
+          const files = e.target.files;
+          if (!files || files.length === 0) return;
+        
+          for (const file of Array.from(files)) {
+            await onFileUpload(category, file);
+          }
+        }}
       />
     </div>
 
@@ -189,6 +197,10 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
     setIsSketchOpen(false);
   };
 
+  const [isVollmachtOpen, setIsVollmachtOpen] = useState(false);
+  const vollmachtFile: StoredFile | undefined = caseData?.media?.documents?.vollmacht?.[0];
+
+
   
 
   useEffect(() => {
@@ -254,7 +266,8 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
     if (!ownerId) return;
     setIsUploading(true);
     const fileType = file.type.startsWith('image/') ? 'images' : 'documents';
-    const storageRef = ref(storage, `cases/${ownerId}/${caseId}/${fileType}/${category}/${file.name}`);
+    const uniqueName = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${file.name}`;
+    const storageRef = ref(storage, `cases/${ownerId}/${caseId}/${fileType}/${category}/${uniqueName}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     toast({ title: "Upload gestartet...", description: `Datei ${file.name} wird hochgeladen.` });
@@ -268,9 +281,12 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         // const caseRef = doc(db, "cases", caseId) as DocumentReference<Case>;
         const caseRef = doc(db, "cases", ownerId!, "user_cases", caseId ) as DocumentReference<Case>;
-        const newFile = { name: file.name, url: downloadURL };
-        const currentFiles = caseData?.media?.[fileType]?.[category] || [];
-        await updateDoc(caseRef, { [`media.${fileType}.${category}`]: [...currentFiles, newFile] });
+        const newFile = { name: uniqueName, url: downloadURL };
+
+        await updateDoc(caseRef, {
+          [`media.${fileType}.${category}`]: arrayUnion(newFile),
+        });
+        
         toast({ title: "Upload erfolgreich!", description: `${file.name} wurde hinzugefügt.` });
         setIsUploading(false);
         setIsFormOpen(false);
@@ -342,8 +358,6 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
 
   const abtretungFile = caseData.media?.documents?.assignment?.[0];
 
-
-
   return (
     <>
       <AbtretungForm
@@ -354,6 +368,24 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
           caseNumber: caseData.caseNumber,
           clientName: caseData.clientName ?? '',
           clientAddress: caseData.clientAddress ?? '',
+          customerPlate: caseData.customerPlate ?? '',
+          accidentDate: caseData.accidentDate ?? '',
+          opponentPlate: caseData.opponentPlate ?? '',
+          opponentInsurance: caseData.opponentInsurance ?? '',
+          opponentVnr: caseData.opponentVnr ?? '',
+          opponentSnr: caseData.opponentSnr ?? '',
+        }}
+        isLoading={isUploading}
+      />
+
+      <VollmachtForm
+        isOpen={isVollmachtOpen}
+        onClose={() => setIsVollmachtOpen(false)}
+        onSave={(pdfFile) => handleFileUpload('vollmacht', pdfFile)}
+        caseData={{
+          caseNumber: caseData.caseNumber,
+          clientName: caseData.clientName ?? '',
+          accidentDate: caseData.accidentDate ?? '',
         }}
         isLoading={isUploading}
       />
@@ -787,6 +819,14 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
                 fileType="image"
               />
               <FileUploadSection
+                label="Fahrzeugschein"
+                category="vehicalRegistration"
+                onFileUpload={handleFileUpload}
+                uploadedFiles={caseData.media?.images?.vehicalRegistration}
+                onRemoveFile={handleFileRemove}
+                fileType="image"
+              />
+              <FileUploadSection
                 label="Vorschäden"
                 category="preDamage"
                 onFileUpload={handleFileUpload}
@@ -878,6 +918,63 @@ export default function CaseDetailsClient({ caseId }: { caseId: string }) {
                 )}
               </CardContent>
             </Card>
+
+            <Card>
+            <CardHeader>
+              <CardTitle>Vollmacht</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              {vollmachtFile ? (
+                <div className="flex items-center justify-between p-2 border rounded-md">
+                  <Link
+                    href={vollmachtFile.url}
+                    target="_blank"
+                    className="flex items-center gap-2 overflow-hidden hover:underline"
+                  >
+                    <FileIcon className="h-6 w-6 flex-shrink-0" />
+                    <span className="text-sm font-medium truncate">
+                      {vollmachtFile.name}
+                    </span>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      handleFileRemove('vollmacht', vollmachtFile.name, vollmachtFile.url)
+                    }
+                    className="text-destructive flex-shrink-0"
+                  >
+                    <XCircle className="h-5 w-5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 p-4 border rounded-md bg-slate-50">
+                  <div className="flex flex-col items-center justify-center gap-2 text-center relative">
+                    <Upload className="h-8 w-8" />
+                    <p className="text-sm font-medium">Dokument hochladen</p>
+                    <Input
+                      id="vollmacht-upload"
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={(e) =>
+                        e.target.files?.[0] &&
+                        handleFileUpload('vollmacht', e.target.files[0])
+                      }
+                      accept="image/*,.pdf"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center justify-center gap-2 text-center">
+                    <Edit className="h-8 w-8" />
+                    <p className="text-sm font-medium">Online ausfüllen & erstellen</p>
+                    <Button size="sm" onClick={() => setIsVollmachtOpen(true)}>
+                      Formular öffnen
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
   
             <Card>
             <CardHeader>

@@ -11,6 +11,7 @@ export interface StoredFile {
  * Optional: alle neuen Reifen‐Felder
  */
 export interface Case {
+  [x: string]: any
   /** Firestore‐Dokumenten‐ID */
   id: string
 
@@ -61,6 +62,10 @@ export interface Case {
 
   /** Beschriebene, bereits reparierte Vorschäden */
   repairedDamage?: string
+
+  partner?: {
+    name?: string;
+  };
 
   /** Alle in diesem Fall hochgeladenen Mediendateien */
   media?: {

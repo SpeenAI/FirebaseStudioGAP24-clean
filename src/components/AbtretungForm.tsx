@@ -347,7 +347,7 @@ export const AbtretungForm: React.FC<AbtretungFormProps> = ({
             <div><strong>Name des Kunden:</strong> {caseData.clientName}</div>
             <div><strong>Adresse:</strong> {caseData.clientAddress}</div>
             <div><strong>Kennzeichen Klient:</strong> {caseData.customerPlate}</div>
-            <div><strong>Unfallort:</strong> {caseData.accidentLocation}</div>
+            <div><strong>Unfalldatum:</strong> {caseData.accidentDate}</div>
             <div><strong>Kennzeichen Gegner:</strong> {caseData.opponentPlate}</div>
             <div><strong>Versicherung Gegner:</strong> {caseData.opponentInsurance}</div>
             <div><strong>VNR Gegner:</strong> {caseData.opponentVnr}</div>

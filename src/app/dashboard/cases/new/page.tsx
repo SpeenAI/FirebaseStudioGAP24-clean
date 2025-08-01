@@ -22,6 +22,14 @@ interface CaseFormData {
   opponentInsurance: string;
   opponentVnr: string;
   opponentSnr: string;
+  inspectionLocation: string;
+  policeRecordNumber: string;
+  witnesses:          string;
+  serviceBook:        string;
+  accidentLocation:   string;
+  accidentDescription:string;
+  clientPhone:        string;
+  clientEmail:        string;
 }
 
 export default function NewCasePage() {
@@ -38,6 +46,14 @@ export default function NewCasePage() {
     opponentInsurance: '',
     opponentVnr: '',
     opponentSnr: '',
+    inspectionLocation: '',
+    policeRecordNumber: '',
+    witnesses:          '',
+    serviceBook:        '',
+    accidentLocation:   '',
+    accidentDescription:'',
+    clientPhone:        '',
+    clientEmail:        '',
   });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -117,8 +133,8 @@ export default function NewCasePage() {
               <Input id="clientAddress" placeholder="Musterstraße 1, 12345 Stadt" value={formData.clientAddress} onChange={handleInputChange} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="clientLicense">Kennzeichen des Kunden</Label>
-              <Input id="clientLicense" placeholder="B‑AB 1234" value={formData.customerPlate} onChange={handleInputChange} />
+              <Label htmlFor="customerPlate">Kennzeichen des Kunden</Label>
+              <Input id="customerPlate" placeholder="B AB 1234" value={formData.customerPlate} onChange={handleInputChange} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="accidentDate">Unfalltag</Label>
@@ -134,8 +150,8 @@ export default function NewCasePage() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="opponentLicense">Kennzeichen des Gegners</Label>
-              <Input id="opponentLicense" placeholder="M‑CD 5678" value={formData.opponentPlate} onChange={handleInputChange} />
+            <Label htmlFor="opponentPlate">Kennzeichen des Gegners</Label>
+            <Input id="opponentPlate" placeholder="M CD 5678" value={formData.opponentPlate} onChange={handleInputChange} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="opponentInsurance">Versicherung des Gegners</Label>
@@ -148,6 +164,45 @@ export default function NewCasePage() {
             <div className="grid gap-2">
               <Label htmlFor="opponentSnr">SNR des Gegners</Label>
               <Input id="opponentSnr" placeholder="0987654321" value={formData.opponentSnr} onChange={handleInputChange} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Weitere Angaben */}
+        <Card>
+          <CardHeader><CardTitle>Weitere Angaben</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="inspectionLocation">Besichtigungsort</Label>
+              <Input id="inspectionLocation" value={formData.inspectionLocation} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="policeRecordNumber">Polizei-Aktenzeichen</Label>
+              <Input id="policeRecordNumber" value={formData.policeRecordNumber} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="witnesses">Zeugen</Label>
+              <Input id="witnesses" value={formData.witnesses} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="serviceBook">Scheckheft gepflegt</Label>
+              <Input id="serviceBook" value={formData.serviceBook} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="accidentLocation">Unfallort</Label>
+              <Input id="accidentLocation" value={formData.accidentLocation} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2 sm:col-span-2">
+              <Label htmlFor="accidentDescription">Unfallbeschreibung</Label>
+              <Input id="accidentDescription" value={formData.accidentDescription} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="clientPhone">Telefonnummer</Label>
+              <Input id="clientPhone" value={formData.clientPhone} onChange={handleInputChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="clientEmail">E-Mail</Label>
+              <Input id="clientEmail" type="email" value={formData.clientEmail} onChange={handleInputChange} />
             </div>
           </CardContent>
         </Card>
